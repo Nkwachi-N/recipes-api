@@ -54,23 +54,7 @@ else:
         api_base=os.getenv("OPENAI_BASE_URL"),
     )
 
-# --- Rate limit protection: wrap LLM chat with a delay ---
-_original_chat = llm.chat
-_original_achat = llm.achat
 
-
-def _rate_limited_chat(*args, **kwargs):
-    time.sleep(3)
-    return _original_chat(*args, **kwargs)
-
-
-async def _rate_limited_achat(*args, **kwargs):
-    await asyncio.sleep(3)
-    return await _original_achat(*args, **kwargs)
-
-
-llm.chat = _rate_limited_chat
-llm.achat = _rate_limited_achat
 
 
 # --- Helper to read/write state across LlamaIndex versions ---
