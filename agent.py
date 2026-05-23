@@ -210,7 +210,10 @@ commentor_agent = FunctionAgent(
         "- If you need any additional details, you must hand off to the ContextAgent. \n"
         '- You should directly address the author. So your comments should sound like: \n'
         '"Thanks for fixing this. I think all places where we call quote should be fixed. Can you roll this fix out everywhere?"\n'
-        "- You must hand off to the ReviewAndPostingAgent once you are done drafting a review."
+        "CRITICAL WORKFLOW - You MUST follow these steps in order: \n"
+        "1. After drafting the review, you MUST call add_comment_to_state with the full review as the draft_comment argument. \n"
+        "2. Then you MUST call handoff to transfer control to ReviewAndPostingAgent. \n"
+        "DO NOT just write the review as a text response. You MUST use the tools. Failure to call these tools means the review will not be posted."
     ),
     can_handoff_to=["ContextAgent", "ReviewAndPostingAgent"],
 )
