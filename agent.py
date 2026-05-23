@@ -20,8 +20,7 @@ from llama_index.llms.groq import Groq
 dotenv.load_dotenv()
 
 # --- GitHub client setup ---
-git_token = os.getenv("GH_TOKEN") or os.getenv("GITHUB_TOKEN")
-git = Github(git_token) if git_token else None
+git = Github(os.getenv("GITHUB_TOKEN")) if os.getenv("GITHUB_TOKEN") else None
 
 repo_url = "https://github.com/Nkwachi-N/recipes-api.git"
 
