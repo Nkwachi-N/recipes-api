@@ -244,7 +244,7 @@ workflow_agent = AgentWorkflow(
 # --- Main ---
 
 async def main():
-    query = input().strip()
+    query = "write a review for the latest pr"
     prompt = RichPromptTemplate(query)
 
     handler = workflow_agent.run(prompt.format())
