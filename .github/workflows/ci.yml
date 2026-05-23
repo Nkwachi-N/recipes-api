@@ -20,16 +20,13 @@ jobs:
           python-version: '3.13'
 
       - name: Install Poetry
-        run:
-          pip install poetry
+        run: pip install poetry
 
       - name: Install dependencies
-        run: |
-          poetry install --no-root
+        run: poetry install --no-root
 
-      - name : Run migrations
-        run: |
-          poetry run python manage.py migrate --noinput
+      - name: Run migrations
+        run: poetry run python manage.py migrate --noinput
 
       - name: Run pytest with coverage
         continue-on-error: true
@@ -41,19 +38,16 @@ jobs:
         if: always()
         uses: aGallea/tests-coverage-report@v1
         with:
-          cobertura-path:
-            coverage.xml
-          junit-path:
-            pytest.xml
+          cobertura-path: coverage.xml
+          junit-path: pytest.xml
           show-diffcover: 'true'
+
       - name: Review agent
+        timeout-minutes: 5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GROQ_MODEL: llama-3.3-70b-versatile
-        run: poetry run python agent.py $GITHUB_TOKEN $REPOSITORY $PR_NUMBER $GROQ_API_KEY $GROQ_MODEL
-
+        run: poetry run python agent.py

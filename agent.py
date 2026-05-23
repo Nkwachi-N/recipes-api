@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 from typing import Any
 
 import dotenv
@@ -20,11 +21,19 @@ from llama_index.llms.groq import Groq
 dotenv.load_dotenv()
 
 # --- GitHub client setup ---
-git = Github(os.getenv("GITHUB_TOKEN")) if os.getenv("GITHUB_TOKEN") else None
+# In GitHub Actions, GITHUB_TOKEN is provided; locally we read from .env
+git_token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+git = Github(git_token) if git_token else None
 
-repo_url = "https://github.com/Nkwachi-N/recipes-api.git"
+# Repo can come from REPOSITORY (GitHub Actions: "owner/repo")
+# or GITHUB_REPO_URL (local: full URL)
+repository = os.getenv("REPOSITORY", "")
+repo_url = os.getenv("GITHUB_REPO_URL", "https://github.com/Nkwachi-N/recipes-api.git")
 
-if repo_url:
+if repository:
+    full_repo_name = repository
+    repo = git.get_repo(full_repo_name) if git is not None else None
+elif repo_url:
     repo_name = repo_url.split("/")[-1].replace(".git", "")
     username = repo_url.split("/")[-2]
     full_repo_name = f"{username}/{repo_name}"
@@ -45,10 +54,27 @@ else:
         api_base=os.getenv("OPENAI_BASE_URL"),
     )
 
+# --- Rate limit protection: wrap LLM chat with a delay ---
+_original_chat = llm.chat
+_original_achat = llm.achat
+
+
+def _rate_limited_chat(*args, **kwargs):
+    time.sleep(3)
+    return _original_chat(*args, **kwargs)
+
+
+async def _rate_limited_achat(*args, **kwargs):
+    await asyncio.sleep(3)
+    return await _original_achat(*args, **kwargs)
+
+
+llm.chat = _rate_limited_chat
+llm.achat = _rate_limited_achat
+
 
 # --- Helper to read/write state across LlamaIndex versions ---
 async def _get_state(ctx):
-    """Read the workflow state dict, trying every known Context API."""
     if hasattr(ctx, "get") and callable(ctx.get):
         try:
             return await ctx.get("state")
@@ -64,7 +90,6 @@ async def _get_state(ctx):
 
 
 async def _set_state(ctx, state):
-    """Write the workflow state dict back."""
     if hasattr(ctx, "set") and callable(ctx.set):
         try:
             await ctx.set("state", state)
@@ -245,7 +270,7 @@ workflow_agent = AgentWorkflow(
 
 async def main():
     pr_number = os.getenv("PR_NUMBER", "1")
-    query = "write a review for pr number" + pr_number
+    query = f"Write a review for PR number {pr_number}"
     prompt = RichPromptTemplate(query)
 
     handler = workflow_agent.run(prompt.format())
@@ -268,4 +293,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    git.close()
+    if git is not None:
+        git.close()
