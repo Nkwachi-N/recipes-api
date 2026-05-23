@@ -22,7 +22,7 @@ dotenv.load_dotenv()
 # --- GitHub client setup ---
 git = Github(os.getenv("GITHUB_TOKEN")) if os.getenv("GITHUB_TOKEN") else None
 
-repo_url = os.getenv("GITHUB_REPO_URL", "")
+repo_url = "https://github.com/Nkwachi-N/recipes-api.git"
 
 if repo_url:
     repo_name = repo_url.split("/")[-1].replace(".git", "")
