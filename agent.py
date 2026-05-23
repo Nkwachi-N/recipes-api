@@ -42,19 +42,23 @@ else:
     repo = None
 
 # --- LLM setup ---
-if os.getenv("GROQ_API_KEY"):
-    llm = Groq(
-        model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
-        api_key=os.getenv("GROQ_API_KEY"),
-    )
-else:
-    llm = OpenAI(
+# if os.getenv("GROQ_API_KEY"):
+#     llm = Groq(
+#         model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+#         api_key=os.getenv("GROQ_API_KEY"),
+#     )
+# else:
+#     llm = OpenAI(
+#         model=os.getenv("OPENAI_MODEL", "gpt-4o"),
+#         api_key=os.getenv("OPENAI_API_KEY"),
+#         api_base=os.getenv("OPENAI_BASE_URL"),
+#     )
+
+llm = OpenAI(
         model=os.getenv("OPENAI_MODEL", "gpt-4o"),
         api_key=os.getenv("OPENAI_API_KEY"),
         api_base=os.getenv("OPENAI_BASE_URL"),
     )
-
-
 
 
 # --- Helper to read/write state across LlamaIndex versions ---
