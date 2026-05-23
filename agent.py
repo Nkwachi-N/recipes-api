@@ -257,22 +257,30 @@ async def main():
     query = f"Write a review for PR number {pr_number}"
     prompt = RichPromptTemplate(query)
 
-    handler = workflow_agent.run(prompt.format())
+    try:
+        handler = workflow_agent.run(prompt.format())
 
-    current_agent = None
-    async for event in handler.stream_events():
-        if hasattr(event, "current_agent_name") and event.current_agent_name != current_agent:
-            current_agent = event.current_agent_name
-            print(f"Current agent: {current_agent}")
-        elif isinstance(event, AgentOutput):
-            if event.response.content:
-                print("\n\nFinal response:", event.response.content)
-            if event.tool_calls:
-                print("Selected tools: ", [call.tool_name for call in event.tool_calls])
-        elif isinstance(event, ToolCallResult):
-            print(f"Output from tool: {event.tool_output}")
-        elif isinstance(event, ToolCall):
-            print(f"Calling selected tool: {event.tool_name}, with arguments: {event.tool_kwargs}")
+        current_agent = None
+        async for event in handler.stream_events():
+            print(f"DEBUG: {type(event).__name__}")
+            if hasattr(event, "current_agent_name") and event.current_agent_name != current_agent:
+                current_agent = event.current_agent_name
+                print(f"Current agent: {current_agent}")
+            elif isinstance(event, AgentOutput):
+                if event.response.content:
+                    print("\n\nFinal response:", event.response.content)
+                if event.tool_calls:
+                    print("Selected tools: ", [call.tool_name for call in event.tool_calls])
+            elif isinstance(event, ToolCallResult):
+                print(f"Output from tool: {event.tool_output}")
+            elif isinstance(event, ToolCall):
+                print(f"Calling selected tool: {event.tool_name}, with arguments: {event.tool_kwargs}")
+            if type(event).__name__ == "WorkflowFailedEvent":
+                print(f"WORKFLOW FAILED: {event}")
+    except Exception as e:
+        print(f"EXCEPTION: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
