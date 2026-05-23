@@ -265,7 +265,6 @@ async def main():
 
         current_agent = None
         async for event in handler.stream_events():
-            print(f"DEBUG: {type(event).__name__}")
             if hasattr(event, "current_agent_name") and event.current_agent_name != current_agent:
                 current_agent = event.current_agent_name
                 print(f"Current agent: {current_agent}")
@@ -279,9 +278,19 @@ async def main():
             elif isinstance(event, ToolCall):
                 print(f"Calling selected tool: {event.tool_name}, with arguments: {event.tool_kwargs}")
             if type(event).__name__ == "WorkflowFailedEvent":
-                print(f"WORKFLOW FAILED: {event}")
+                print(f"WORKFLOW FAILED - exception: {getattr(event, 'exception', 'no exception attr')}")
+                print(f"WORKFLOW FAILED - step: {getattr(event, 'step_name', 'no step name')}")
+
+        # Also try to get final result
+        try:
+            result = await handler
+            print(f"Handler result: {result}")
+        except Exception as e:
+            print(f"Handler exception: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
     except Exception as e:
-        print(f"EXCEPTION: {type(e).__name__}: {e}")
+        print(f"Outer exception: {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()
 
