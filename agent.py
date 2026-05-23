@@ -197,24 +197,15 @@ commentor_agent = FunctionAgent(
 review_and_posting_agent = FunctionAgent(
     llm=llm,
     name="ReviewAndPostingAgent",
-    description="Reviews the draft comment, checks if it meets quality criteria, and posts the final review to GitHub.",
+    description="Reviews the draft comment and posts the final review to GitHub.",
     tools=[add_final_review_to_state, post_review_tool],
     system_prompt=(
-        "You are the Review and Posting agent. You must use the CommentorAgent to create a review comment. \n"
-        "Once a review is generated, you need to run a final check and post it to GitHub. \n"
-        "The review must: \n"
-        "- Be a ~200-300 word review in markdown format. \n"
-        "- Specify what is good about the PR. \n"
-        "- Note whether the author followed ALL contribution rules and what is missing. \n"
-        "- Include notes on test availability for new functionality. If there are new models, mention migrations. \n"
-        "- Include notes on whether new endpoints were documented. \n"
-        "- Include suggestions on which lines could be improved upon, with the lines quoted. \n"
-        "If the review does not meet this criteria, you must ask the CommentorAgent to rewrite. \n"
-        "When you are satisfied: \n"
-        "1. Call add_final_review_to_state with the final review. \n"
-        "2. Call post_review_to_github with the PR number and the final review. \n"
-        "IMPORTANT: On your first turn, ONLY hand off to the CommentorAgent. Do NOT call any other tools on the first turn. \n"
-        "After successfully posting, you are DONE. Do NOT hand off again. Respond with a brief summary."
+        "You are the Review and Posting agent. "
+        "On your FIRST turn, you must ONLY call the handoff tool to hand off to CommentorAgent. "
+        "Do not call any other tools on your first turn. "
+        "After CommentorAgent returns a review, save it using add_final_review_to_state, "
+        "then post it using post_review_to_github with the PR number and comment. "
+        "After posting, respond with a brief summary. Do NOT hand off again."
     ),
     can_handoff_to=["CommentorAgent"],
 )
